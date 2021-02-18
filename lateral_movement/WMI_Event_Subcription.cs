@@ -56,7 +56,7 @@ namespace wmisubscription_lateralmovement
             myBinder["Consumer"] = myEventConsumer.Path.RelativePath;
             myBinder.Put();
 
-            // Cleanup
+            // Cleanup/delete
             // myEventFilter.Delete();
             // myEventConsumer.Delete();
             // myBinder.Delete();
