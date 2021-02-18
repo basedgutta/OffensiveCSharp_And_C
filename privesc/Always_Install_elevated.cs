@@ -3,7 +3,7 @@ using Microsoft.Win32;
 
 public static void AlwaysInstallElevated()
         {
-            Console.WriteLine("AlwaysInstallElevated keys);
+            Console.WriteLine("AlwaysInstallElevated keys");
 
             string AlwaysInstallElevatedHKLM = GetRegValue("HKLM", "Software\\Policies\\Microsoft\\Windows\\Installer", "AlwaysInstallElevated");
             string AlwaysInstallElevatedHKCU = GetRegValue("HKCU", "Software\\Policies\\Microsoft\\Windows\\Installer", "AlwaysInstallElevated");
