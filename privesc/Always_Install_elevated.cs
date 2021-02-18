@@ -19,5 +19,6 @@ public static void AlwaysInstallElevated()
             }
             else
             {
-                Console.WriteLine("No registry keys found"); 
+                Console.WriteLine("No registry keys found");
+            }
         }
