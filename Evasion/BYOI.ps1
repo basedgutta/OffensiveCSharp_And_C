@@ -66,7 +66,7 @@ public static def Main():
 
     scriptinput = [Boo.Lang.Compiler.IO.StringInput]::new("MyScript.boo", $BooSource)
 
-    #Passing $false to the constructor tells Boo to not automatically reference default assemblies
+
     $parameters = [Boo.Lang.Compiler.CompilerParameters]::new($false) 
 
     $parameters.Input.Add($scriptinput) | Out-Null
@@ -74,7 +74,6 @@ public static def Main():
     $parameters.Ducky = $true
     #$parameters.OutputWriter = [System.IO.StringWriter]::new()
 
-    #Here we manually add assemblies as references to the compiler that will probably be used 100% of the time within our Boo code
     $parameters.AddAssembly($BooLangAsm)
     $parameters.AddAssembly($BooLangExtensionsAsm)
     $parameters.AddAssembly($BooLangCompilerAsm)
