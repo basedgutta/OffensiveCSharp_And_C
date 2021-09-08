@@ -6,7 +6,7 @@ function Invoke-BoolangAmsiPatch
     $BoolangExtensionsDLL = @'BOOLONG_EXTENSION_DLL_BASE64'@
 
     function Load-Assembly($EncodedCompressedFile)
-    {   # this function will decomproess and placed the dlls into byte arrays via the load assembly function, and assigned to their respective vars in line 17-20
+    {  
         $DeflatedStream = [IO.Compression.DeflateStream]::new([IO.MemoryStream][Convert]::FromBase64String($EncodedCompressedFile), [IO.Compression.CompressionMode]::Decompress)
         $UncompressedFileBytes = New-Object Byte[](1900000)
         $DeflatedStream.Read($UncompressedFileBytes, 0, 1900000) | Out-Null
@@ -71,7 +71,7 @@ public static def Main():
 
     scriptinput = [Boo.Lang.Compiler.IO.StringInput]::new("MyScript.boo", $BooSource)
 
-    #Passing $false to the constructor tells Boo to not automatically reference default assemblies
+   
     $parameters = [Boo.Lang.Compiler.CompilerParameters]::new($false) 
 
     $parameters.Input.Add($scriptinput) | Out-Null
@@ -79,7 +79,7 @@ public static def Main():
     $parameters.Ducky = $true
     #$parameters.OutputWriter = [System.IO.StringWriter]::new()
 
-    #Here we manually add assemblies as references to the compiler that will probably be used 100% of the time within our Boo code
+    
     $parameters.AddAssembly($BooLangAsm)
     $parameters.AddAssembly($BooLangExtensionsAsm)
     $parameters.AddAssembly($BooLangCompilerAsm)
@@ -87,7 +87,6 @@ public static def Main():
     $parameters.AddAssembly([Reflection.Assembly]::LoadWithPartialName("mscorlib"))
     $parameters.AddAssembly([Reflection.Assembly]::LoadWithPartialName("System"))
     $parameters.AddAssembly([Reflection.Assembly]::LoadWithPartialName("System.Core"))
-    # lines 41 - 47 tells the compiler to add mscorlib, System and System.core as references to the Boolang code to acces basic .NET APIS
 
     #Write-Output $parameters.References
 
@@ -96,10 +95,10 @@ public static def Main():
     Write-Output "Compiling..."
     $context = $compiler.Run() 
 
-    if ($context.GeneratedAssembly -ne $null) # this checks if the compilations was successful
-    { # 
+    if ($context.GeneratedAssembly -ne $null) 
+    {  
         Write-Output "Executing...`n"
-        $scriptModule = $context.GeneratedAssembly.GetType("MyScriptModule") # this uses GetType() function to retrieve the entry calss called MyScriptModule as no class were defined inside the Boo Source, then the GetMethod() function will be called to trieve the Main BOo function and execute it via Invoke()
+        $scriptModule = $context.GeneratedAssembly.GetType("MyScriptModule") 
         $mainfunction= $scriptModule.GetMethod("Main")
         $mainfunction.Invoke($null, $null)
     }
